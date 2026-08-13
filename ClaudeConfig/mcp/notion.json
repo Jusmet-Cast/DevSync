@@ -1,0 +1,62 @@
+{
+  "$comment": [
+    "Definicion reproducible del MCP server de Notion.",
+    "",
+    "PROBLEMA QUE RESUELVE: el registro real vive en .claude.json, dentro de esta misma carpeta",
+    "de configuracion, y ese archivo esta (correctamente) en .gitignore porque contiene el token.",
+    "Sin este archivo, maquina nueva = server inexistente y TODA la capa 3 de DevSync (DevCodex)",
+    "queda muerta, sin error visible hasta que un agente intenta leer Notion y no encuentra nada.",
+    "",
+    "EL TOKEN NO VA ACA. Nunca. Se pasa por -e al registrar el server (ver abajo).",
+    "",
+    "COMO OBTENER EL TOKEN:",
+    "  1) https://www.notion.so/profile/integrations   (o Notion -> Settings -> Connections",
+    "     -> Develop or manage integrations). El usuario tambien llego por",
+    "     https://app.notion.com/developers/connections",
+    "  2) New integration -> tipo INTERNAL -> asociarla al workspace correcto",
+    "  3) Capabilities: Read content + Update content + Insert content.",
+    "     'No user information' alcanza — DevSync no necesita datos de usuarios.",
+    "  4) Copiar el 'Internal Integration Secret' (empieza con ntn_).",
+    "     Se muestra una sola vez de forma comoda; si se pierde, se regenera.",
+    "",
+    "PASO QUE TODO EL MUNDO OLVIDA — COMPARTIR LAS PAGINAS:",
+    "  El token NO da acceso a nada por si solo. Notion usa un modelo de acceso explicito:",
+    "  hay que compartir cada pagina raiz con la integracion.",
+    "    Abrir DevCodex -> menu (...) -> Connections -> buscar la integracion -> Confirm",
+    "  Las bases y subpaginas heredan el acceso de la pagina padre, asi que compartir la raiz",
+    "  DevCodex alcanza para las 10 bases.",
+    "  Sintoma tipico de haberlo olvidado: la API responde 200 pero devuelve listas vacias,",
+    "  o 404 'Page not found or not shared with the integration'.",
+    "",
+    "COMO REGISTRARLO (una vez por maquina):",
+    "  claude mcp add --scope user notion -e NOTION_TOKEN=ntn_TU_TOKEN -- npx -y @notionhq/notion-mcp-server",
+    "",
+    "VERIFICACION:",
+    "  /mcp                     dentro de Claude Code -> 'notion' debe figurar conectado",
+    "  claude mcp list          desde terminal",
+    "  Prueba real: pedirle que busque la pagina DevCodex. Si conecta pero no encuentra nada,",
+    "  el problema es el share de la pagina, no el token.",
+    "",
+    "SEGURIDAD (Regla #6 — dominio de CIPHER):",
+    "  - El token da acceso de LECTURA Y ESCRITURA a todo lo compartido con la integracion.",
+    "  - Vive solo en .claude.json, que esta en .gitignore. NUNCA se commitea ni se copia",
+    "    al espejo de DevSync/ClaudeConfig.",
+    "  - Si se expone: se ROTA (regenerar en la pagina de la integracion). Borrarlo del lugar",
+    "    donde se filtro no lo desexpone.",
+    "  - Para revocar el acceso sin tocar el token: quitar la integracion de Connections en",
+    "    la pagina. Corta el acceso al instante.",
+    "",
+    "ALCANCE MINIMO: compartir SOLO las paginas que DevSync necesita (DevCodex). Compartir el",
+    "workspace entero le da a cualquier agente acceso a todo, incluido lo personal."
+  ],
+  "mcpServers": {
+    "notion": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "env": {
+        "NOTION_TOKEN": "<ntn_... — NO versionar. Pasar por -e al registrar>"
+      }
+    }
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "$comment": [
+    "ESQUEMA CANONICO DE DEVCODEX — fuente de verdad, agnostica de instancia.",
+    "",
+    "POR QUE ESTE ARCHIVO NO TIENE IDs:",
+    "Los data_source_id son unicos por workspace. Al duplicar la plantilla, TODOS cambian.",
+    "Por eso el matching es por NOMBRE, no por id. Los ids reales de la instancia activa",
+    "viven en System/NOTION_DATA_REGISTRY.md §2, que es un documento DE INSTANCIA.",
+    "",
+    "  devcodex-schema.json     → que DEBE existir  (plantilla, reusable)",
+    "  NOTION_DATA_REGISTRY.md  → que existe HOY    (instancia, con ids reales)",
+    "",
+    "LIMITES DE LA API (ver NOTION_DATA_REGISTRY.md §5.1):",
+    "  G-05  No se pueden CREAR bases de datos por API. El humano crea los 10 contenedores",
+    "        vacios; bootstrap-devcodex.mjs les puebla el schema.",
+    "  G-04  Las propiedades tipo `status` no son editables por API. Por eso Sprints.Status",
+    "        y Document Hub.Status son `select` a proposito: para que un agente pueda cerrarlos.",
+    "        Projects.Status y Training.Status SI son `status` porque ya existian asi.",
+    "  ---   Los FILTROS DE VISTA no son configurables por API. Se aplican a mano (ver",
+    "        DEVCODEX_TEMPLATE.md §4) o se heredan al duplicar la plantilla."
+  ],
+
+  "version": "1.0",
+  "fecha": "2026-08-12",
+  "raiz": "DevCodex",
+
+  "databases": {
+    "Projects": {
+      "rol": "Hub del modelo. El requerimiento y su ciclo de vida.",
+      "title_property": "Project name",
+      "properties": {
+        "Status":     { "type": "status", "options": ["Not started", "Blocked", "In progress", "Done"], "nota": "No editable por API (G-04). Se crea a mano." },
+        "Priority":   { "type": "select", "options": ["High", "Medium", "Low"] },
+        "Engagement": { "type": "select", "options": ["Corporate", "Freelance", "Internal"] },
+        "Client":     { "type": "select", "options": [], "nota": "Se puebla con los clientes reales de cada instancia." },
+        "Assignee":   { "type": "people" },
+        "Start Date": { "type": "date" },
+        "Files & media": { "type": "files" },
+        "Initiated":   { "type": "checkbox" },
+        "Development": { "type": "checkbox" },
+        "Review":      { "type": "checkbox" },
+        "Finalized":   { "type": "checkbox" },
+        "Deployed":    { "type": "checkbox" },
+        "Progress":   { "type": "formula", "formula": "(toNumber(Initiated) + toNumber(Development) + toNumber(Review) + toNumber(Finalized) + toNumber(Deployed)) / 5", "nota": "Read-only. Cada checkbox vale 20%." },
+        "Sprints":   { "type": "relation", "target": "Sprints",      "dual": "Projects" },
+        "Repos":     { "type": "relation", "target": "Repos",        "dual": "Projects" },
+        "Dev Log":   { "type": "relation", "target": "Dev Log",      "dual": "Project" },
+        "Documents": { "type": "relation", "target": "Document Hub", "dual": "Projects" }
+      }
+    },
+
+    "Sprints": {
+      "rol": "Eje temporal. Delimita el periodo del KPI.",
+      "title_property": "Sprint",
+      "convencion_titulo": "AAAA.MM (mensual) · AAAA.MM-S1/-S2 (quincenal) · AAAA.MM-<slug> (custom)",
+      "properties": {
+        "Start Date":    { "type": "date" },
+        "End Date":      { "type": "date" },
+        "Objective":     { "type": "rich_text" },
+        "Status":        { "type": "select", "options": ["Planned", "Active", "Closed"], "nota": "select y NO status a proposito (G-04): un agente debe poder cerrar un ciclo." },
+        "Cadence":       { "type": "select", "options": ["Monthly", "Biweekly", "Custom"] },
+        "Methodology":   { "type": "select", "options": ["Canvas", "Scrum", "Kanban", "Ad-hoc"] },
+        "Retrospective": { "type": "rich_text" },
+        "Projects":  { "type": "relation", "target": "Projects",     "dual": "Sprints" },
+        "Dev Log":   { "type": "relation", "target": "Dev Log",      "dual": "Sprint" },
+        "Documents": { "type": "relation", "target": "Document Hub", "dual": "Sprint" }
+      }
+    },
+
+    "Repos": {
+      "rol": "Mapa codigo <-> proyecto.",
+      "title_property": "Repository",
+      "properties": {
+        "URL":            { "type": "url" },
+        "Provider":       { "type": "select", "options": ["Azure DevOps", "GitHub", "GitLab", "Bitbucket", "Local only"], "nota": "Sin default. Se lee, nunca se asume." },
+        "Default Branch": { "type": "rich_text" },
+        "Active Branch":  { "type": "rich_text" },
+        "Visibility":     { "type": "select", "options": ["Private", "Internal", "Public"] },
+        "CI Status":      { "type": "select", "options": ["Passing", "Failing", "Not configured", "Unknown"] },
+        "Requires VPN":   { "type": "checkbox", "nota": "Se consulta ANTES de conectar. Evita timeouts opacos en repos on-premise." },
+        "Last Deploy":    { "type": "date" },
+        "Local Path":     { "type": "rich_text", "nota": "Ata el repo al disco. Es lo que permite a los agentes SDD encontrar el codigo." },
+        "Notes":          { "type": "rich_text" },
+        "Projects":  { "type": "relation", "target": "Projects",     "dual": "Repos" },
+        "Stack":     { "type": "relation", "target": "Technologies", "dual": "Repos" },
+        "Dev Log":   { "type": "relation", "target": "Dev Log",      "dual": "Repository" },
+        "Documents": { "type": "relation", "target": "Document Hub", "dual": "Repository" }
+      }
+    },
+
+    "Dev Log": {
+      "rol": "Bitacora sesion por sesion. Alimenta el KPI.",
+      "title_property": "Entry",
+      "properties": {
+        "Date":       { "type": "date" },
+        "Type":       { "type": "select", "options": ["Feature", "Bugfix", "Refactor", "Test", "Deploy", "Spike", "Docs", "Config", "Support"] },
+        "Summary":    { "type": "rich_text" },
+        "Confidence": { "type": "select", "options": ["Verified", "Estimated"], "nota": "Regla #8. Lo que hace auditable lo que genera la IA." },
+        "Time Spent (h)": { "type": "number" },
+        "Pull Request":   { "type": "url", "nota": "url por entrada, NO relacion: un PR agrupa varias entradas (1:N)." },
+        "Author":     { "type": "select", "options": ["Human", "FORGE", "SENTRY", "RELAY", "SCRIBE", "PILOT", "COMPASS", "ECHO", "MENTOR", "CIPHER"] },
+        "Project":      { "type": "relation", "target": "Projects",     "dual": "Dev Log" },
+        "Sprint":       { "type": "relation", "target": "Sprints",      "dual": "Dev Log" },
+        "Repository":   { "type": "relation", "target": "Repos",        "dual": "Dev Log" },
+        "Technologies": { "type": "relation", "target": "Technologies", "dual": "Dev Log" }
+      }
+    },
+
+    "Document Hub": {
+      "rol": "Entregables firmes. Sobrevive al proyecto.",
+      "title_property": "Doc name",
+      "properties": {
+        "Category": { "type": "multi_select", "options": ["Validation", "Test Plan", "KPI Report", "Architecture", "Spec", "Migration Status", "Runbook", "Postmortem", "Meeting Notes", "Reference", "Proposal", "Planning", "Strategy doc", "Customer research"] },
+        "Status":     { "type": "select", "options": ["Draft", "In Review", "Approved", "Superseded", "Deprecated"] },
+        "Confidence": { "type": "select", "options": ["Verified", "Estimated"] },
+        "Source Format": { "type": "select", "options": ["Markdown", "PDF", "DOCX", "XLSX", "Image", "Native Notion"] },
+        "Source Path":   { "type": "rich_text", "nota": "Ruta real en disco. Se verifica antes de escribir o el Hub se llena de enlaces rotos." },
+        "Notes":         { "type": "rich_text" },
+        "Created time":      { "type": "created_time" },
+        "Last updated time": { "type": "last_edited_time" },
+        "Created by":        { "type": "created_by" },
+        "Last edited by":    { "type": "last_edited_by" },
+        "Projects":     { "type": "relation", "target": "Projects",     "dual": "Documents" },
+        "Sprint":       { "type": "relation", "target": "Sprints",      "dual": "Documents" },
+        "Repository":   { "type": "relation", "target": "Repos",        "dual": "Documents" },
+        "Technologies": { "type": "relation", "target": "Technologies", "dual": "Documents" }
+      }
+    },
+
+    "Technologies": {
+      "rol": "Catalogo de COSAS CON LAS QUE SE TRABAJA. No solo tecnologias.",
+      "title_property": "Name",
+      "properties": {
+        "Type":          { "type": "select", "options": ["Language", "Framework", "IDE", "Tool", "Query Language", "Platform", "Methodology", "Concept", "Other"] },
+        "Documentation": { "type": "url" },
+        "Repos":     { "type": "relation", "target": "Repos",        "dual": "Stack" },
+        "Training":  { "type": "relation", "target": "Training",     "dual": "Technologies" },
+        "Toolkit":   { "type": "relation", "target": "Toolkit",      "dual": "Technologies" },
+        "Documents": { "type": "relation", "target": "Document Hub", "dual": "Technologies" },
+        "Dev Log":   { "type": "relation", "target": "Dev Log",      "dual": "Technologies" },
+        "Resources": { "type": "relation", "target": "Resources",    "dual": "Technologies" }
+      }
+    },
+
+    "Training": {
+      "rol": "Cursos y formacion. Antes se llamaba Learning.",
+      "title_property": "Name",
+      "properties": {
+        "Platform":   { "type": "multi_select", "options": [], "nota": "Se puebla con las plataformas reales de cada instancia." },
+        "Instructor": { "type": "rich_text" },
+        "Status":     { "type": "status", "options": ["Not started", "In progress", "Done"] },
+        "Start Date": { "type": "date" },
+        "Link":       { "type": "url" },
+        "Notes":        { "type": "relation", "target": "Notes",        "dual": "Training" },
+        "Technologies": { "type": "relation", "target": "Technologies", "dual": "Training" },
+        "Projects":     { "type": "relation", "target": "Projects",     "dual": null, "nota": "single_property en la instancia actual. Deberia ser dual." }
+      }
+    },
+
+    "Notes": {
+      "rol": "Apuntes de clase. Siempre atados a un Training.",
+      "title_property": "Title",
+      "properties": {
+        "Start Date":    { "type": "date" },
+        "End Date":      { "type": "date" },
+        "Files & media": { "type": "files" },
+        "Training": { "type": "relation", "target": "Training", "dual": "Notes" }
+      }
+    },
+
+    "Toolkit": {
+      "rol": "Documentacion auxiliar de tecnologias.",
+      "title_property": "Name",
+      "properties": {
+        "Created":      { "type": "created_time" },
+        "Technologies": { "type": "relation", "target": "Technologies", "dual": "Toolkit" }
+      }
+    },
+
+    "Resources": {
+      "rol": "Recursos por tecnologia.",
+      "title_property": "Name",
+      "properties": {
+        "Created":      { "type": "created_time" },
+        "Technologies": { "type": "relation", "target": "Technologies", "dual": "Resources" }
+      }
+    }
+  }
+}

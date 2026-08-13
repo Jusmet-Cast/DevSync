@@ -1,0 +1,34 @@
+{
+  "$comment": [
+    "Definicion reproducible del MCP server de Engram.",
+    "",
+    "PROBLEMA QUE RESUELVE: el registro real vive en .claude.json, dentro de esta misma carpeta",
+    "de configuracion, y ese archivo esta (correctamente) en .gitignore porque contiene tokens.",
+    "Resultado: la pieza de la que",
+    "depende el protocolo OBLIGATORIO de memoria de CLAUDE.md no estaba versionada en ningun",
+    "lado. Maquina nueva o reinstalacion = protocolo apuntando a un server inexistente, sin",
+    "error visible.",
+    "",
+    "COMO USARLO:",
+    "  1) Registro a nivel usuario (una vez por maquina):",
+    "       claude mcp add --scope user engram -- engram mcp",
+    "  2) O copiar este bloque mcpServers a un .mcp.json en la raiz de un proyecto.",
+    "     settings.json tiene enableAllProjectMcpServers: true, asi que no hay que aprobarlo a mano.",
+    "",
+    "VERIFICACION: el hook SessionStart (hooks/session-bootstrap.js) chequea que el binario",
+    "'engram' este en el PATH y avisa FUERTE si no esta. Falla ruidoso, nunca silencioso.",
+    "",
+    "EXCEPCION: DENTRO DEL CONTENEDOR DOCKER el comando de arriba NO alcanza. Hace falta:",
+    "  claude mcp add --scope user engram -e ENGRAM_DATA_DIR=/home/dev/.claude/.engram-data -- engram mcp",
+    "Motivo: ~/.engram (el default) cae sobre 9p en ese entorno, y SQLite necesita locking POSIX",
+    "que 9p/drvfs no da — probado en vivo, un simple PRAGMA tira 'disk I/O error'. Windows y WSL",
+    "puro no tienen este problema (filesystem real), asi que ahi el comando base sin -e es correcto.",
+    "Ver docker/docker-compose.yml para el detalle completo."
+  ],
+  "mcpServers": {
+    "engram": {
+      "command": "engram",
+      "args": ["mcp"]
+    }
+  }
+}

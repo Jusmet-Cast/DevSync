@@ -1,0 +1,64 @@
+# ==========================================
+# CREDENCIALES Y DATOS SENSIBLES
+# ==========================================
+.credentials.json
+session-env/
+session-state/
+sessions/
+shell-snapshots/
+
+# ==========================================
+# CACHÉ, BACKUPS Y ARCHIVOS TEMPORALES
+# ==========================================
+backups/
+cache/
+paste-cache/
+file-history/
+jobs/
+telemetry/
+.last-cleanup
+
+# ==========================================
+# LOGS E HISTORIAL DE CONVERSACIÓN
+# ==========================================
+*.log
+daemon.log
+history.jsonl
+
+# ==========================================
+# ARCHIVOS DE CONFIGURACIÓN DEL SISTEMA / IDE
+# ==========================================
+# .claude.json suele contener tokens o estados locales
+.claude.json
+ide/
+daemon/
+
+# ==========================================
+# OPCIONAL: AJUSTES DE USUARIO / PROYECTOS
+# ==========================================
+# Descomenta si 'projects/' contiene rutas absolutas o datos locales
+# projects/
+projects/
+
+# Descomenta si 'settings.json' guarda tokens o paths locales específicos de tu máquina
+# settings.json
+
+# ==========================================
+# PLUGINS — CACHÉ REGENERABLE DE MARKETPLACES
+# ==========================================
+# Claude Code clona los marketplaces acá solo. Es caché de máquina, NO configuración:
+# se regenera a partir de `enabledPlugins` en settings.json. Versionarlo mete cientos
+# de archivos ajenos en los diffs y tapa los cambios propios.
+plugins/marketplaces/
+plugins/repos/
+plugins/cache/
+plugins/plugin-catalog-cache.json
+# Estado de maquina: contiene installLocation con ruta absoluta (C:\Users\<user>\...).
+# La fuente de verdad portable es `extraKnownMarketplaces` en settings.json.
+plugins/known_marketplaces.json
+
+# Imagenes
+image-cache/
+
+#Docker
+docker/

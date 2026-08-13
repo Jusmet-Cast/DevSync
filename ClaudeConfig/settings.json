@@ -1,0 +1,298 @@
+{
+  "env": {
+    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "3"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "mcp__engram__*",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_find",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_network_request",
+      "mcp__playwright__browser_route_list",
+      "mcp__playwright__browser_generate_locator",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_navigate_back",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_select_option",
+      "mcp__playwright__browser_hover",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_verify_text_visible",
+      "mcp__playwright__browser_verify_element_visible",
+      "mcp__playwright__browser_verify_value",
+      "mcp__playwright__browser_route",
+      "mcp__playwright__browser_unroute",
+      "mcp__playwright__browser_network_state_set",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_tabs",
+      "mcp__playwright__browser_handle_dialog",
+      "mcp__playwright__browser_close",
+      "Read(**/*.cs)",
+      "Read(**/*.ts)",
+      "Read(**/*.html)",
+      "Read(**/*.scss)",
+      "Read(**/*.sql)",
+      "Read(**/*.csproj)",
+      "Read(**/*.sln)",
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet format:*)",
+      "Bash(npx ng test:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx eslint:*)"
+    ],
+    "deny": [
+      "mcp__playwright__browser_run_code_unsafe",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/appsettings.Development.json)",
+      "Read(**/appsettings.Production.json)",
+      "Read(**/appsettings.Local.json)",
+      "Read(**/secrets/**)",
+      "Read(**/*.pfx)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.publishsettings)",
+      "Read(**/.git/config)",
+      "Read(**/id_rsa)",
+      "Read(**/.npmrc)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git checkout:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(dotnet ef migrations remove:*)",
+      "Write(**/*.csproj)",
+      "Edit(**/*.csproj)",
+      "Write(**/*.sln)",
+      "Edit(**/*.sln)",
+      "Write(**/appsettings*.json)",
+      "Edit(**/appsettings*.json)",
+      "Write(**/angular.json)",
+      "Edit(**/angular.json)",
+      "Write(**/package.json)",
+      "Edit(**/package.json)",
+      "Write(**/tsconfig*.json)",
+      "Edit(**/tsconfig*.json)",
+      "Write(**/*.yml)",
+      "Edit(**/*.yml)",
+      "Write(**/*.yaml)",
+      "Edit(**/*.yaml)"
+    ],
+    "defaultMode": "default"
+  },
+  "model": "opus",
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-bootstrap.js\"",
+            "shell": "bash",
+            "timeout": 15,
+            "statusMessage": "Bootstrap de sesion (cleanup + estado SDD)..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-title.js\"",
+            "shell": "bash",
+            "timeout": 10,
+            "statusMessage": "Nombrando la sesion..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-sync.js\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "Reconciliando sesiones con el otro entorno..."
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/post-compact-memory.js\"",
+            "shell": "bash",
+            "timeout": 10,
+            "statusMessage": "Recordatorio de persistencia post-compactacion..."
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/notify-desktop.js\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/clean-arch-guard.js\"",
+            "shell": "bash",
+            "timeout": 10,
+            "statusMessage": "Validando dependencias de capas..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/git-guard.js\"",
+            "shell": "bash",
+            "timeout": 10,
+            "statusMessage": "Validando comando git..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/precommit-validate.js\"",
+            "shell": "bash",
+            "timeout": 30,
+            "statusMessage": "Validando la config antes de commitear..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/auto-format.js\"",
+            "shell": "bash",
+            "timeout": 60,
+            "statusMessage": "Formateando archivo..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-close-guard.js\"",
+            "shell": "bash",
+            "timeout": 15,
+            "statusMessage": "Verificando el cierre de sesion de Engram..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-sync.js\"",
+            "shell": "bash",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/notify-desktop.js\"",
+            "shell": "bash",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-sync.js\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/subagent-start.js\"",
+            "shell": "bash",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/notify-desktop.js\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/subagent-index.js\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/statusline.js\"",
+    "refreshInterval": 15
+  },
+  "enabledPlugins": {
+    "warp@claude-code-warp": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
+  "theme": "dark"
+}
