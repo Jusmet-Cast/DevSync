@@ -47,12 +47,17 @@
     "  browser_evaluate         ejecuta JS arbitrario en la pagina.",
     "  browser_file_upload      toca el filesystem.",
     "  browser_*_set/clear/delete de cookies y storage: pisan estado real de un dominio.",
-    "Se pueden usar igual — pero pidiendo permiso, que es como debe ser."
+    "Se pueden usar igual — pero pidiendo permiso, que es como debe ser.",
+    "",
+    "--browser=chromium: sin este flag el default es el canal 'chrome' del sistema, que se",
+    "instala via apt y pide sudo ('npx playwright install chrome' falla sin root). chromium",
+    "es el binario bundled de Playwright, se baja con 'npx playwright install chromium' sin",
+    "sudo. Cambiar esto requiere reiniciar la sesion de Claude Code para que el MCP lo tome."
   ],
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest", "--isolated", "--caps=devtools"]
+      "args": ["@playwright/mcp@latest", "--isolated", "--caps=devtools", "--browser=chromium"]
     }
   }
 }
