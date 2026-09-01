@@ -80,26 +80,18 @@
       "Bash(git checkout:*)",
       "Bash(dotnet ef database update:*)",
       "Bash(dotnet ef migrations remove:*)",
-      "Write(**/*.csproj)",
       "Edit(**/*.csproj)",
-      "Write(**/*.sln)",
       "Edit(**/*.sln)",
-      "Write(**/appsettings*.json)",
       "Edit(**/appsettings*.json)",
-      "Write(**/angular.json)",
       "Edit(**/angular.json)",
-      "Write(**/package.json)",
       "Edit(**/package.json)",
-      "Write(**/tsconfig*.json)",
       "Edit(**/tsconfig*.json)",
-      "Write(**/*.yml)",
       "Edit(**/*.yml)",
-      "Write(**/*.yaml)",
       "Edit(**/*.yaml)"
     ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "sonnet",
   "enableAllProjectMcpServers": true,
   "hooks": {
     "SessionStart": [
@@ -111,13 +103,6 @@
             "shell": "bash",
             "timeout": 15,
             "statusMessage": "Bootstrap de sesion (cleanup + estado SDD)..."
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-title.js\"",
-            "shell": "bash",
-            "timeout": 10,
-            "statusMessage": "Nombrando la sesion..."
           },
           {
             "type": "command",
@@ -220,6 +205,13 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/notify-desktop.js\"",
+            "shell": "bash",
+            "timeout": 10,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/notify-telegram.js\"",
             "shell": "bash",
             "timeout": 10,
             "async": true
