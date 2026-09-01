@@ -1,0 +1,44 @@
+# ==========================================
+# DevSync — .gitignore RAIZ
+# ==========================================
+# Criterio unico de este archivo: este repo se clona en OTRAS maquinas para
+# levantar el ecosistema. Todo lo que sea estado de ESTA maquina (rutas
+# absolutas, tokens, caches, sesiones) rompe o ensucia la instalacion destino.
+# Si algo no sobrevive a un `git clone` en otra compu, no va versionado.
+#
+# El espejo de ~/.claude tiene su propio .gitignore en ClaudeConfig/.
+
+# ---- Estado local de Claude Code al trabajar DENTRO de este repo ----
+# Ojo: solo el .claude/ de la raiz. NO afecta a ClaudeConfig/, que es el
+# espejo versionado y si debe viajar.
+/.claude/
+**/settings.local.json
+.claude.json
+
+# ---- Credenciales ----
+# El token de Notion (ntn_) vive en .claude.json, nunca aca. Ver INSTALL.md 2.4
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+.credentials.json
+
+# ---- Node (Notion/verify-devcodex.mjs) ----
+node_modules/
+npm-debug.log*
+package-lock.json.bak
+
+# ---- Logs y temporales ----
+*.log
+*.tmp
+*.bak
+*~
+
+# ---- Ruido del SO / editores ----
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

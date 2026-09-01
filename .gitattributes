@@ -1,0 +1,23 @@
+# ==========================================
+# DevSync — normalizacion de finales de linea
+# ==========================================
+# Este repo se clona en Windows, WSL, Linux y contenedores. Sin esto, cada
+# checkout reescribe los EOL y aparecen diffs fantasma: archivos "modificados"
+# sin un solo cambio real (paso con hooks/git-guard.js). Peor: el parseo de
+# frontmatter de las skills ya rompio una vez por un \r colado.
+#
+# `text=auto` guarda LF en el repo y hace checkout nativo en cada plataforma.
+# NO reescribe el working tree solo: la normalizacion ocurre archivo por
+# archivo al commitear. Para forzarla de una: `git add --renormalize .`
+
+* text=auto
+
+# PowerShell exige CRLF en algunos hosts de Windows.
+*.ps1 text eol=crlf
+
+# Todo lo que ejecuta node o bash va con LF si o si.
+*.js   text eol=lf
+*.mjs  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.sh   text eol=lf
