@@ -69,7 +69,18 @@ cp -r ClaudeConfig/mcp      ~/.claude/
 cp -r ClaudeConfig/memory   ~/.claude/
 cp    ClaudeConfig/CLAUDE.md ClaudeConfig/README.md \
       ClaudeConfig/settings.json ClaudeConfig/.gitignore ~/.claude/
+
+# Resolvé la ruta del repo en el CLAUDE.md recién copiado (Capa 1).
+# SIN ESTE PASO DevSync Core no carga — y falla en silencio: un @import
+# que no resuelve no tira error, simplemente no aparece en el contexto.
+sed -i "s|__DEVSYNC_REPO__|$(pwd)|" ~/.claude/CLAUDE.md
+grep -n DEVSYNC_SYSTEM_PROMPT ~/.claude/CLAUDE.md   # debe mostrar la ruta real
 ```
+
+> ⚠️ **`ClaudeConfig/CLAUDE.md` conserva el placeholder `__DEVSYNC_REPO__` a propósito.**
+> El repo guarda la plantilla portátil; tu `~/.claude/CLAUDE.md` guarda la ruta resuelta de
+> tu máquina. Esa diferencia **no es drift y no se corrige** copiando el local hacia el repo:
+> hacerlo hardcodea tu `C:Users<vos>...` y rompe la instalación de todos los demás.
 
 **Qué NO se copia, y por qué importa:**
 
@@ -177,14 +188,25 @@ node ~/.claude/hooks/validate-config.js
 
 Hooks activos, por evento:
 
-| Evento | Hooks |
-|---|---|
-| `SessionStart` | `session-bootstrap` · `session-sync` · `session-title` |
-| `PreToolUse` | `git-guard` · `clean-arch-guard` · `atl-only-guard` |
-| `PostToolUse` | `auto-format` · `subagent-index` |
-| `SubagentStart` / `SubagentStop` | `detect-subagent-model` · `judge-output-guard` |
-| `Stop` / `SessionEnd` | `session-close-guard` · `post-compact-memory` · `precommit-validate` |
-| `Notification` | `notify-desktop` |
+| Evento | Matcher | Hooks |
+|---|---|---|
+| `SessionStart` | — | `session-bootstrap` · `session-sync` |
+| `SessionStart` | `compact` | `post-compact-memory` |
+| `PreToolUse` | `Edit|MultiEdit|Write` | `clean-arch-guard` |
+| `PreToolUse` | `Bash` | `git-guard` · `precommit-validate` |
+| `PostToolUse` | `Edit|MultiEdit|Write` | `auto-format` |
+| `Stop` | — | `session-close-guard` · `session-sync` · `notify-desktop` · `notify-telegram` |
+| `SessionEnd` | — | `session-sync` |
+| `SubagentStart` | — | `subagent-start` · `notify-desktop` |
+| `SubagentStop` | — | `subagent-index` |
+| `Notification` | `permission_prompt` | `notify-desktop` |
+
+> Presentes en `hooks/` pero **no cableados** hoy en `settings.json`: `atl-only-guard.js`,
+> `detect-subagent-model.js`, `judge-output-guard.js` y `validate-config.js` (este último se
+> corre a mano). Estar en la carpeta no los activa — el cableado es `settings.json`.
+
+> `notify-telegram.js` lee `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` del entorno. Sin esas
+> variables no rompe nada: registra el faltante y sigue. Nunca pongas el token en el archivo.
 
 > **Los hooks obligan; las skills solo enseñan.** Una skill se carga si el modelo decide que el trigger matchea — no está garantizado. Si una regla tiene que cumplirse SÍ o SÍ (ej. que el agente nunca haga `git commit`), va en un hook. `git-guard.js` y `clean-arch-guard.js` son exactamente eso.
 
@@ -333,6 +355,7 @@ Documentados en detalle en `System/NOTION_DATA_REGISTRY.md §5.1`. El resumen qu
 
 ```
 DevSync/
+├── .gitignore                          ← raiz · excluye estado de maquina
 ├── INSTALL.md                          ← este archivo
 ├── PROPUESTA_NIVELACION_DEVCODEX.md    ← diagnóstico y arquitectura (v1)
 ├── Notion/                             ← CAPA 3 · replicación del workspace
@@ -350,9 +373,9 @@ DevSync/
 └── ClaudeConfig/                       ← CAPA 2 · espejo portátil de ~/.claude
     ├── CLAUDE.md · README.md · settings.json · .gitignore
     ├── agents/   (13)
-    ├── hooks/    (18 + lib + windows)
+    ├── hooks/    (17 + lib/ + windows/)
     ├── skills/   (29 + registry)
-    ├── mcp/      (engram.json · playwright.json)
+    ├── mcp/      (engram.json · notion.json · playwright.json)
     └── memory/   (ENGRAM-PROTOCOL.md)
 ```
 
