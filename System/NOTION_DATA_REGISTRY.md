@@ -374,13 +374,21 @@ Convención acordada (pendiente de aplicar):
 1. **Nombres de campo literales.** Se copian carácter por carácter de §3. No se traducen ni se normalizan.
 2. **`Progress` nunca se escribe** — es fórmula. Se mueve marcando checkboxes.
 3. **Multi-select:** array de strings exactamente como aparecen en §3.1 / §3.2. Un valor inexistente **crea una opción nueva sin avisar** — verificar contra este archivo primero.
-4. **Parent en creación:** usar `data_source_id`, no `database_id`, cuando la base tenga múltiples data sources.
+4. **Parent en creación:** depende del endpoint, y esto muerde — ver **G-06**.
+   `update-a-data-source` y las queries usan `data_source_id`; **`API-post-page` exige el
+   `database_id`**. Ambos IDs están en la tabla de §2.
 5. **Confirmar el borrador con el usuario antes de escribir**, salvo que el comando lo prevea explícitamente.
 6. **Protocolo de Espejo obligatorio** — ver §6.
 
 ### 5.1 ⚠️ Gotchas verificados de la API de Notion
 
-Descubiertos en la normalización del 8 Ago 2026. No son teoría — cada uno se rompió en vivo:
+G-01 a G-05 se descubrieron en la normalización del 8 Ago 2026. No son teoría — cada uno se
+rompió en vivo.
+
+> **G-06 y G-07 · confianza: verificado por terceros, pendiente de re-verificación** (Regla #8).
+> Los reportó otra sesión de Claude Code el 1 Sep 2026 contra el workspace real, con el texto
+> literal del error. No se pudieron reproducir en la sesión que los documentó porque el MCP de
+> Notion no cargó sus tools. Tratar como ciertos y confirmar en el próximo write real.
 
 | # | Comportamiento | Consecuencia |
 |---|---|---|
@@ -388,6 +396,8 @@ Descubiertos en la normalización del 8 Ago 2026. No son teoría — cada uno se
 | G-02 | Cambiar el `color` de una opción existente sí falla, pero con `400`: `Cannot update color of select with id: X`. | Al enviar opciones existentes, mandar solo `{"id": "..."}` sin `color`. |
 | G-03 | Omitir una opción del array la **elimina** junto con su asignación en todas las páginas. | Solo omitir después de haber migrado las páginas. Es la vía legítima de borrado. |
 | G-04 | Las opciones de una propiedad `status` **no son editables por API** en absoluto (ni nombre ni color ni grupos). | Renombrar opciones de status = cambio manual en la UI, sin excepción. |
+| G-06 | **`API-post-page` exige `database_id`, NO `data_source_id`** — al revés de lo que pedía la regla 4 de §5 hasta hoy. Pasar el data source devuelve `404`: *"Could not find database... Make sure the relevant pages are shared with your integration"*. | El mensaje culpa a los permisos y manda a revisar el share de la página, que está bien. Se pierde el tiempo en el lugar equivocado. Ante ese 404, **probar primero el otro ID**. |
+| G-07 | Cada objeto `rich_text` topea en **2000 caracteres**. | Un texto largo no se rechaza entero: hay que partirlo en varios objetos dentro del array. |
 | G-05 | **No se pueden crear bases de datos nuevas.** `API-create-a-data-source` responde `400`: *"Creating new databases with data sources is not supported in this endpoint for API version 2025-09-03 and later. Use the Create Database API instead"* — y esa API no está expuesta en el MCP. | El humano crea la base vacía en la UI; el agente después le puebla el schema con `update-a-data-source`. |
 
 **Patrón correcto para renombrar opciones de un multi_select:**
@@ -416,7 +426,10 @@ PASO 3 — Mapear el input del usuario a esos campos exactos.
 
 PASO 4 — Mostrar el borrador ANTES de escribir.
 
-PASO 5 — Escribir con parent = {"data_source_id": "..."}
+PASO 5 — Escribir. OJO con el parent (G-06):
+           API-post-page          -> parent = {"database_id": "..."}
+           update-a-data-source   -> data_source_id
+         Los dos IDs estan en §2. Usar el equivocado da un 404 que habla de permisos.
 ```
 
 Este es el mecanismo central: el sistema no solo lee Notion, aprende su propio patrón de registro y lo repite con consistencia.
