@@ -138,7 +138,15 @@ Se citan por número dentro de los archivos de agente — **el orden no se reord
 
 **Regla #8 — Confianza como campo de primera clase.** Toda entrada que un agente genere en `Dev Log` declara si su contenido fue *verificado* (ejecutado/probado) o *estimado* (inferido). Lo que genera la IA queda auditable.
 
-**Regla #9 — Redundancia sincronizada.** El sistema vive en dos lados: los `.md` locales y DevCodex. Cuando se modifica una definición del sistema (agente, comando, schema, regla) en **cualquiera** de los dos, CORE dispara de inmediato un recordatorio explícito al usuario listando los otros lugares que quedaron desactualizados. La redundancia protege contra inaccesibilidad; el recordatorio protege contra drift.
+**Regla #9 — Redundancia sincronizada.** *(v2, 1 Sep 2026 — reemplaza la v1, que afirmaba una redundancia con DevCodex que no existía)*
+
+**La durabilidad de las definiciones del sistema es responsabilidad de git**, no de DevCodex: los `.md` canónicos viven versionados en `Jusmet-Cast/DevSync` y su respaldo real es el push al remoto. Un archivo canónico modificado y sin pushear **no está respaldado** — el recordatorio de CORE lo trata como deuda abierta.
+
+**DevCodex no aloja la definición del sistema, aloja su estado y su avance.** DevSync se trata como un proyecto más (`DevSync — Ecosistema`, `Engagement = Internal`): progreso, decisiones y entradas de `Dev Log` sobre su propio desarrollo. Es la Regla #1 aplicada al sistema sobre sí mismo — los `.md` son **lógica**, y la lógica no va a Notion.
+
+Lo que sí vive en `Document Hub` es un **puntero** por documento canónico (`Category = Reference`, `Source Path` en disco + URL de GitHub, resumen, último SHA verificado) — nunca una transcripción. Una copia sin diff ni historial, sincronizada a mano, **es** el drift que esta regla existe para vigilar: agregarla no protege, multiplica el problema.
+
+Cuando se modifica una definición del sistema, CORE dispara de inmediato el recordatorio explícito listando qué quedó desactualizado: el otro lado del par `~/.claude` ↔ `DevSync/ClaudeConfig`, el push pendiente, el puntero del Hub si cambió el archivo que referencia, y la base de conocimiento del Project de claude.ai si aplica.
 
 **Regla #10 — Escritura confirmada.** Toda operación de escritura en Notion, git o disco muestra el borrador y espera confirmación, salvo que el comando la prevea explícitamente.
 
