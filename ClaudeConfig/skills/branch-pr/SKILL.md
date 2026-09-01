@@ -17,15 +17,24 @@ metadata:
 > **Alcance:** git, nada más. Esta skill NO asume GitHub, GitLab ni ninguna plataforma: no habla
 > de labels, issues ni Discussions, porque esas son features de plataforma, no de git.
 
-## 1. Regla #1 — el agente NO ejecuta git de escritura
+## 1. Regla #1 — política de git graduada por reversibilidad
 
-El agente **NUNCA** corre `git commit`, `git push`, `git merge`, `git rebase` ni `git cherry-pick`
-en repos de proyecto. Prepara el working tree y resume el cambio; **el humano revisa y ejecuta**.
+*(v2, 11 Ago 2026 — reemplaza la prohibición total de v1. El criterio ya no es "¿es git de
+escritura?" sino "¿cuánto daño puede hacer si sale mal?")*
 
-- Reforzado por el hook `git-guard.js`: no es confianza, es bloqueo.
-- Lo que el agente SÍ puede correr sin restricción: `git status`, `git diff`, `git log`,
-  `git branch`, `git show`.
-- Excepción única: el repo de configuración (`~/.claude`), donde el producto ES la config.
+| Operación | Política | Por qué |
+| --- | --- | --- |
+| `status` · `diff` · `log` · `branch` · `show` · `add` | ✅ libre | Sin efecto |
+| `commit` | ✅ **permitido** | Local y reversible (`reset`, `amend`) |
+| `merge` · `rebase` · `cherry-pick` · `pull` | ⚠️ **asistido** — se pregunta | Local pero puede perder trabajo |
+| `push` | ⛔ **NUNCA** | Sale de la máquina. Irreversible en la práctica |
+
+- Reforzado por el hook `git-guard.js`: no es confianza, es bloqueo mecánico. La tabla de arriba
+  es exactamente la política que el hook ejecuta (`DENY = ['push']`, `ASK = ['merge', 'rebase',
+  'cherry-pick', 'pull']`; `commit` no está en ninguna lista).
+- El agente puede commitear el cambio que preparó, pero **nunca pushea** — eso lo ejecuta el humano.
+- Excepción del repo de configuración (`~/.claude`): ahí el producto ES la config, así que el
+  agente opera libre salvo push, que sigue siendo del humano en todos lados.
 
 ## 2. Naming de branches
 
