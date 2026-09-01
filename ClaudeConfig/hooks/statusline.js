@@ -7,8 +7,18 @@
  * estabamos?".
  *
  * Dos filas (cada linea impresa es una fila):
- *   ~/erp-facturacion  feat/12345-alta-vales*  [sonnet]  SDD:alta-vales→design
+ *   ~/erp-facturacion  ⎇ feat/12345-alta-vales*  [sonnet]  @dev-orchestrator
  *   ctx ████████░░ 78% libre  ·  5h 24% ↻3h10m
+ *
+ * LO QUE NO DIBUJA, Y ES DELIBERADO:
+ *
+ *   - El NOMBRE DE LA SESION. Claude Code ya lo muestra de forma nativa en la barra del prompt
+ *     (changelog: "Added session name display on the prompt bar when using /rename"). Repetirlo
+ *     aca era tenerlo dos veces en pantalla y gastar ancho en la fila que mas compite por espacio.
+ *
+ *   - La FASE SDD (`SDD:{change}→{fase}`). El dato sigue llegando, por un canal mejor:
+ *     `session-bootstrap.js` inyecta los changes abiertos al contexto en cada arranque. Una fase
+ *     no cambia cada 15 segundos, asi que no gana nada por estar en una vista en vivo.
  *
  * La segunda fila responde "¿cuanto me queda?" sin tener que preguntar: contexto libre de la
  * sesion y consumo de los limites de uso. Los dos datos vienen en el payload del statusLine
@@ -20,7 +30,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { RUNS_DIR, etiqueta, discrepa, faseValida } = require('./lib/agent-meta');
+const { RUNS_DIR, etiqueta, discrepa } = require('./lib/agent-meta');
 
 
 /** Rama + dirty con cache en disco por cwd (TTL 5s). Ante cualquier problema, devuelve null. */
@@ -183,14 +193,8 @@ process.stdin.on('end', () => {
   const cwd = (p.workspace && p.workspace.current_dir) || p.cwd || process.cwd();
   const parts = [`[36m${path.basename(cwd)}[0m`];
 
-  // Nombre de la sesion. OJO: el campo puede NO venir — solo aparece si la nombraste con
-  // --name / /rename, o una vez que existe un titulo autogenerado. El nombre por defecto
-  // (tipo "my-app-3f") NO lo popula. Por eso siempre hay que tolerar la ausencia.
-  const sesion = (p.session_name || '').trim();
-  if (sesion) {
-    const corta = sesion.length > 26 ? sesion.slice(0, 25) + '…' : sesion;
-    parts.push(`[90m‹${corta}›[0m`);
-  }
+  // (El nombre de la sesion NO va aca: lo dibuja Claude Code en la barra del prompt, arriba del
+  // input. Ver la cabecera del archivo.)
 
   // Rama + dirty flag, con cache de 5s.
   //
@@ -198,7 +202,7 @@ process.stdin.on('end', () => {
   // pocos segundos aunque no toques nada. La doc avisa explicitamente que la statusline no debe
   // colgarse en comandos lentos. 5s es imperceptible para el ojo y saca la mayoria de los spawns.
   const git = gitCacheado(cwd);
-  if (git && git.branch) parts.push(`[33m${git.branch}${git.dirty}[0m`);
+  if (git && git.branch) parts.push(`[33m⎇ ${git.branch}${git.dirty}[0m`);
 
   // Modelo activo
   const model = (p.model && (p.model.display_name || p.model.id)) || '';
@@ -208,40 +212,10 @@ process.stdin.on('end', () => {
   // o con el setting `agent` configurado; en una sesion normal no existe.
   const agente = (p.agent && p.agent.name) || '';
 
-  // La fase SDD se muestra UNICAMENTE bajo dev-orchestrator: es el unico contexto donde el
-  // flujo por fases esta corriendo. En una sesion suelta ese dato es ruido.
-  if (agente === 'dev-orchestrator') {
-    try {
-      const changesDir = path.join(cwd, '.atl', 'changes');
-      let best = null;
-      for (const name of fs.readdirSync(changesDir)) {
-        const st = path.join(changesDir, name, 'state.md');
-        if (!fs.existsSync(st)) continue;
-        const m = fs.readFileSync(st, 'utf8').match(/##\s*Current Phase\s*\r?\n+\s*([^\r\n]+)/i);
-        // state.md a veces trae prosa despues del token ("verify (completado — ...)").
-        // Nos quedamos con el token: cortamos en el primer parentesis, guion o punto y coma.
-        const fase = (m ? m[1] : '')
-          .trim()
-          .split(/[(\-–—;,]/)[0]
-          .trim()
-          .slice(0, 24);
-        // Si no es uno de los 9 tokens del protocolo (sdd-artifact-protocol), el state.md esta
-        // corrupto o a medio escribir: mejor no mostrarlo que mostrar texto libre/markdown crudo.
-        if (!faseValida(fase) || /^closed$/i.test(fase)) continue;
-        const mtime = fs.statSync(st).mtimeMs;
-        if (!best || mtime > best.mtime) best = { name, fase, mtime };
-      }
-      if (best) {
-        const change = best.name.length > 28 ? best.name.slice(0, 27) + '…' : best.name;
-        parts.push(`[32mSDD:${change}→${best.fase}[0m`);
-      }
-    } catch {
-      /* proyecto sin SDD */
-    }
-  } else if (agente) {
-    // Otro agente principal: mostrar cual, para saber bajo que persona estas trabajando.
-    parts.push(`[34m@${agente}[0m`);
-  }
+  // Se muestra SIEMPRE que haya agente, dev-orchestrator incluido: saber bajo que persona
+  // estas trabajando vale en toda sesion, y era el unico dato de esta barra que no se podia
+  // deducir de ningun otro lado de la pantalla.
+  if (agente) parts.push(`[34m@${agente}[0m`);
 
   // Sub-agentes corriendo AHORA, con su modelo. Con 9 sub-agentes y modelos mixtos (opus en
   // design, haiku en spec), saber que hay en vuelo y con que modelo es la diferencia entre

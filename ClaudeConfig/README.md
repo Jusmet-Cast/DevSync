@@ -106,14 +106,13 @@ settings.json             Modelo, permisos, hooks, statusline
 | `judge-output-guard.js` | PreToolUse — scoped a `jd-judge` | **Bloquea** escrituras fuera de `session-state/agent-outputs/` (bajo la carpeta de config, no del proyecto). Le da a `jd-judge` un `Write` acotado solo para persistir su propio veredicto como backup — sigue sin poder tocar código |
 | `detect-subagent-model.js` | PostToolUse — scoped a los sub-agentes | Lee del transcript el modelo **real** que la plataforma asignó y lo compara con el declarado |
 | `auto-format.js` | PostToolUse (Edit·MultiEdit·Write) | `dotnet format` / `prettier` sobre el archivo tocado. No compila |
-| `session-title.js` | SessionStart | Nombra la sesión (la rama de trabajo) para que `/resume` muestre un título y no un pedazo de conversación |
 | `session-bootstrap.js` | SessionStart | Cleanup de `agent-outputs` (TTL 24h) y de marcas de cierre (TTL 7d), inyecta changes SDD abiertos, avisa si Engram no está |
 | `post-compact-memory.js` | SessionStart (`compact`) | Inyecta el protocolo AFTER COMPACTION de Engram apenas se compacta el contexto |
 | `session-close-guard.js` | Stop | Bloquea **una vez por sesión** si hubo escrituras y no se llamó a `mem_session_summary` |
 | `subagent-start.js` | SubagentStart | Abre la ficha del sub-agente en vuelo (tipo + **modelo** + inicio) que lee la statusline |
 | `notify-desktop.js` | Notification (`permission_prompt`, `idle_prompt`) · SubagentStart | Notificación de escritorio multiplataforma para desligarse del CLI — ver sección "Notificaciones de escritorio" más abajo |
 | `subagent-index.js` | SubagentStop | Cierra la ficha, calcula duración, traza en `_index.jsonl` y **devuelve una línea al orquestador** |
-| `statusline.js` | statusLine | `proyecto · ‹sesión› · rama* · [modelo] · SDD:change→fase` — el segmento SDD **solo** aparece bajo `dev-orchestrator` (ver abajo) |
+| `statusline.js` | statusLine | `proyecto · ⎇ rama* · [modelo] · @agente` — no repite el nombre de la sesión (lo dibuja el CLI arriba del input) ni la fase SDD (ver abajo) |
 | `validate-config.js` | manual | Valida la consistencia de toda la config — ver abajo |
 
 ## Notificaciones de escritorio (`notify-desktop.js`)
@@ -318,16 +317,27 @@ o con el setting `agent`. La barra usa ese dato para mostrar lo que corresponde 
 
 | Sesión | Qué muestra |
 |--------|-------------|
-| `claude --agent=dev-orchestrator` | `proyecto · ‹sesión› · rama* · [modelo] · SDD:change→fase` |
-| `claude` sin agente | `proyecto · ‹sesión› · rama* · [modelo]` — sin ruido de SDD |
-| `claude --agent=otro` | `proyecto · ‹sesión› · rama* · [modelo] · @nombre-del-agente` |
+| `claude --agent=<lo-que-sea>` | `proyecto · ⎇ rama* · [modelo] · @nombre-del-agente` |
+| `claude` sin agente | `proyecto · ⎇ rama* · [modelo]` — el segmento simplemente no existe |
+
+`dev-orchestrator` **no es un caso especial**. Antes lo era: en vez del nombre del agente mostraba
+`SDD:{change}→{fase}`, leyendo `state.md` del change más reciente en `.atl/changes/`. Se sacó por
+dos razones:
+
+1. **Una fase no cambia cada 15 segundos.** No gana nada por estar en una vista en vivo, y pagaba
+   un `readdirSync` + `readFileSync` por cada refresco de la barra.
+2. **El dato ya llega mejor por otro lado.** `session-bootstrap.js` inyecta los changes SDD
+   abiertos —con su fase— directo al contexto en cada arranque, y `/sdd-status` los da a demanda.
+
+Lo que quedó es el nombre del agente, que era **el único dato de esta barra imposible de deducir
+mirando el resto de la pantalla**.
 
 ### Segunda fila: cuánto te queda
 
 La statusline imprime **dos filas** (cada línea impresa es una fila):
 
 ```
-~/erp-facturacion  feat/12345-alta-vales*  [sonnet]  SDD:alta-vales→design
+~/erp-facturacion  ⎇ feat/12345-alta-vales*  [sonnet]  @dev-orchestrator
 ctx ████████░░ 78% libre  ·  5h 24% ↻3h10m  ·  7d 41% ↻2d21h
 ```
 
@@ -413,49 +423,71 @@ Las fichas viven en `session-state/agent-runs/` (no versionado). Si un sub-agent
 sucia, `SubagentStop` nunca corre y la ficha queda huérfana: se descartan las de más de 2h al
 leerlas y `session-bootstrap` las barre al arrancar. Mejor mostrar de menos que mentir.
 
-### Por qué `/resume` mostraba un pedazo de conversación
+### El título de sesión: por qué NINGÚN hook lo escribe
 
-El picker de `/resume` **no se puede customizar**: es UI interna, no hay setting ni hook que dibuje
-esa lista. Lo que sí tiene es una cadena de fallback, textual de la doc:
+Hubo un `session-title.js` que emitía `hookSpecificOutput.sessionTitle` con la rama de trabajo,
+para que el picker de `/resume` mostrara un título y no un pedazo de conversación. **Se eliminó**,
+y vale la pena entender por qué, porque el razonamiento que lo justificaba parecía sólido.
 
-> *"Each row shows the **session name if you set one**, otherwise the AI-generated session title,
-> conversation summary, **or first prompt**"*
+La premisa era que el hook no tenía con qué competir: corre **antes** del primer prompt, cuando el
+título de IA todavía no existe. Falso — no es una carrera, es una **exclusión**. Claude Code escribe
+records `ai-title` en el `.jsonl` de la sesión y los **refresca** a medida que la conversación
+avanza… pero solo si el campo está vacío. Poner un título en `SessionStart` no le gana de mano al
+título de IA: **hace que no se genere nunca.**
 
-Cuando en la lista ves conversación en vez de un título, es porque cayó hasta el **último eslabón**.
-No se arregla cambiando el picker — se arregla llenando el **primero**. Eso hace
-`session-title.js`, emitiendo `hookSpecificOutput.sessionTitle`:
+La evidencia está en tu propio historial (últimos 30 días, Windows, sesiones con 2+ prompts reales):
 
-| Situación | Título |
+| | con `ai-title` | sin |
+|---|---|---|
+| sesiones | 39 | **12** |
+
+Esos 12 no son aleatorios: caen en repos **con rama de feature** — exactamente donde el hook escribía
+título. En `master` devolvía `''` y el título de IA aparecía sin problema. El hook no completaba un
+hueco, lo **creaba**, y encima cambiaba `Fix status-inline hook session title display` por
+`feat-claude`.
+
+Hoy ese campo tiene exactamente dos escritores, y ningún hook entre ellos:
+
+| Quién | Cuándo |
 |---|---|
-| Hay una rama de feature | `12345-alta-vales` (sin el prefijo `feat/`) |
-| Sesión suelta sobre `master` | **Ninguno, a propósito** |
+| Vos — `--name`, `/rename`, `Ctrl+R` en el picker | Explícito, gana siempre |
+| Claude Code — `ai-title` | Solo, tras el primer prompt, y se refresca |
 
-**Deliberadamente NO incluye la fase SDD** (`change→fase`, la que sí muestra la statusline como
-`SDD:...`). La continuidad entre sesiones de un mismo feature ya la da Engram (`mem_context`) + los
-archivos `.atl/changes/` al arrancar con `dev-orchestrator` — el título de sesión no necesita
-repetirla, y en una sesión sin el orquestador ese dato es ruido. La statusline es una vista **en
-vivo** mientras trabajás bajo `dev-orchestrator`, no un mecanismo de continuidad entre sesiones:
-por eso conserva la fase y el título no.
+**Corolario para cualquier hook futuro:** un campo que la plataforma llena sola no es un hueco que
+haya que tapar. Antes de escribirlo desde un hook, comprobá si escribirlo **desactiva** al que lo
+llenaba. `SessionStart` corre antes de que se note la diferencia, que es justo lo que hace que el
+error se vea razonable durante meses.
 
-**No pisa dos cosas, y es deliberado:**
+#### `agent-name` no es el nombre del agente
 
-1. **Un nombre puesto por vos** (`--name`, `/rename`, `Ctrl+R` en el picker). Llega como
-   `session_title` en el input; si viene, el hook no toca nada.
-2. **El título autogenerado por IA, cuando va a ser mejor.** Claude Code resume tu primer prompt
-   con un modelo rápido, y ese resumen suele ser más informativo que un nombre de rama. Pero el
-   hook corre **antes** del primer prompt: no tiene con qué competir. Por eso solo nombra cuando
-   tiene algo genuinamente mejor —una rama de feature—. Ponerle `master` a todo sería peor que el
-   problema original.
+Los tres campos que Claude Code escribe en el `.jsonl` de la sesión, y que son fáciles de confundir
+porque uno está pésimamente nombrado:
 
-El segmento `‹sesión›` sale de `session_name`, que **no siempre viene**: aparece solo si nombraste
-la sesión con `--name` o `/rename`, o una vez que existe un título autogenerado. El nombre por
-defecto (tipo `my-app-3f`) NO lo popula, así que el segmento simplemente se omite. Se trunca a
-26 caracteres.
+| Record | Qué es | Quién lo escribe |
+|---|---|---|
+| `agent-setting` | **El agente de verdad** (`dev-orchestrator`) | El CLI, al arrancar con `--agent` |
+| `custom-title` | El nombre de la sesión | `/rename`, `--name` |
+| `agent-name` | **Espejo de `custom-title`** — dibuja el badge del prompt | El CLI, junto con `custom-title` |
 
-La fase se **trunca en el primer paréntesis, guion o punto y coma** y se corta a 24 caracteres:
-`state.md` a veces trae prosa después del token (`verify (completado — falta ejecución BD)`) y eso
-se comía toda la barra. El detalle completo se lee donde corresponde: en `state.md` o con
-`/sdd-status`.
+`agent-name` **no tiene nada que ver con el agente**: copia el título de la sesión. El badge que
+ves arriba del input es el nombre de la sesión, y es nativo — changelog: *"Added session name
+display on the prompt bar when using `/rename`"*. Ningún hook puede cambiar qué dibuja.
+
+Esto explica la ilusión que sostuvo el bug: mientras el hook escribía `sessionTitle = agent_type`,
+`custom-title` pasaba a valer `"dev-orchestrator"`, `agent-name` lo copiaba, y el badge mostraba el
+nombre del agente. Parecía una feature. Era el bug mirándose al espejo. La prueba está en el
+historial de una sesión real:
+
+```
+línea    4  agent-setting "dev-orchestrator"                    ← el agente, intacto siempre
+línea    2  custom-title  "pt2-rediseño-pantalla-facturacion"   ← nombre puesto a mano
+línea 1791  custom-title  "dev-orchestrator"                    ← el hook lo pisó al retomar
+línea 1821  custom-title  "pt4-rediseio-pantalla-facturacion"   ← /rename, recuperado
+```
+
+**Por eso la statusline ya no dibuja `‹sesión›`.** Ese nombre está a la vista arriba del input; en
+la barra era la segunda copia. La barra se queda con lo que **no** está en ningún otro lado:
+proyecto, rama, modelo y `@agente`.
 
 ## Judgment Day — por qué es un agente y no una skill
 

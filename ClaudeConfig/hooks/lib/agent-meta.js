@@ -24,8 +24,12 @@ const OUT_DIR = path.join(configDir, 'session-state', 'agent-outputs');
 /**
  * Enum cerrado de `## Current Phase` en `state.md` (contrato: sdd-artifact-protocol/SKILL.md).
  * Cualquier sub-agente que escriba otra cosa ahi (texto libre, markdown, una fase a medio
- * terminar) rompe el contrato — y sin este chequeo, session-title.js y statusline.js lo
- * mostraban literal en la UI. Mejor ignorar la entrada que mostrar un dato corrupto.
+ * terminar) rompe el contrato.
+ *
+ * SIN CONSUMIDORES HOY: existia para que statusline.js no dibujara markdown crudo en la barra, y
+ * la barra ya no muestra la fase. Se conserva porque el enum ES el contrato del protocolo y el
+ * unico lugar que aun lee `Current Phase` —session-bootstrap.js— hoy acepta texto libre
+ * (`'desconocida'`) sin validarlo. Si eso llega a molestar, el validador ya esta escrito.
  */
 const FASES_SDD = new Set([
   'explore', 'propose', 'spec', 'design', 'tasks', 'apply', 'verify', 'archive', 'closed',
