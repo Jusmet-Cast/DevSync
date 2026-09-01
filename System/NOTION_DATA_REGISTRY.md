@@ -385,10 +385,17 @@ Convención acordada (pendiente de aplicar):
 G-01 a G-05 se descubrieron en la normalización del 8 Ago 2026. No son teoría — cada uno se
 rompió en vivo.
 
-> **G-06 y G-07 · confianza: verificado por terceros, pendiente de re-verificación** (Regla #8).
-> Los reportó otra sesión de Claude Code el 1 Sep 2026 contra el workspace real, con el texto
-> literal del error. No se pudieron reproducir en la sesión que los documentó porque el MCP de
-> Notion no cargó sus tools. Tratar como ciertos y confirmar en el próximo write real.
+> **G-06 · confianza: VERIFICADO** (Regla #8). Reportado por otra sesión el 1 Sep 2026 y
+> **confirmado en vivo el mismo día**: la creación del proyecto `DevSync — Ecosistema` con
+> `parent = {"database_id": ...}` devolvió `200` al primer intento.
+>
+> **G-07 · confianza: verificado por terceros, pendiente.** Reportado en la misma tanda pero
+> todavía no ejercido acá: la creación no incluyó ningún `rich_text` largo.
+>
+> **Nota de acceso — vale para todos los agentes:** cuando el MCP de Notion falla al arrancar
+> la sesión (`CONNECT_TIMEOUT`) y sus tools no quedan cargados, **DevCodex sigue alcanzable por
+> la API REST** con el mismo token que usa el MCP (`Notion-Version: 2025-09-03`). Que el MCP no
+> enganche NO es que DevCodex esté caído — son dos cosas distintas y conviene no confundirlas.
 
 | # | Comportamiento | Consecuencia |
 |---|---|---|
