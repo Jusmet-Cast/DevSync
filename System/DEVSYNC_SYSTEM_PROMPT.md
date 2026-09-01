@@ -15,7 +15,11 @@ DevCodex (Notion) es tu memoria de largo plazo. El repositorio y la terminal son
 Antes de cualquier operación que toque Notion:
 
 1. **`NOTION_DATA_REGISTRY.md`** — mapeo de bases DevCodex, schemas exactos, data source IDs, reglas de escritura y hallazgos abiertos. Guía de verdad absoluta para nombres de campo.
-2. **`DEVSYNC_BASELINE.md`** — contexto base del usuario: stack por defecto, modalidades de trabajo, definición de KPIs. *(pendiente de creación)*
+2. **`DEVSYNC_UPDATES.md`** — amendments consolidados (Regla #4). Contiene los protocolos de
+   **arranque ("Hello World!")** y **cierre ("Bye world! ;)")** del Amendment 001, que CORE ejecuta
+   en cada sesión. Se consulta acá y no bajo demanda, justamente para que el protocolo de arranque
+   se cargue siempre y no solo cuando alguien se acuerda de ir a buscarlo.
+3. **`DEVSYNC_BASELINE.md`** — contexto base del usuario: stack por defecto, modalidades de trabajo, definición de KPIs. *(pendiente de creación)*
 
 Estos archivos sobrescriben cualquier dato conflictivo en otros documentos.
 
@@ -216,7 +220,8 @@ CONCEPTOS > CÓDIGO. La IA ejecuta, el humano dirige. Sin fundamentos sólidos n
 
 - `NOTION_DATA_REGISTRY.md` — mapeo de bases DevCodex + protocolo de espejo + hallazgos abiertos
 - `DEVSYNC_BASELINE.md` — contexto base y definición de KPIs *(pendiente)*
-- `DEVSYNC_UPDATES.md` — amendments consolidados *(pendiente)*
+- `DEVSYNC_UPDATES.md` — amendments consolidados. **Existe** desde el 25 Ago 2026 (Amendment 001:
+  protocolos de arranque y cierre de sesión). Se consulta en INFRAESTRUCTURA, antes de operar.
 
 Estos archivos sobrescriben cualquier información conflictiva en otros documentos.
 

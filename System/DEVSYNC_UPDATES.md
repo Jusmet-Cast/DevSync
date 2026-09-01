@@ -46,4 +46,8 @@ sin garantía de que quedara completo antes de despedirse.
 `DEVSYNC_SYSTEM_PROMPT.md` (el archivo raíz) todavía no referencia `DEVSYNC_UPDATES.md` como documento
 canónico a consultar — falta agregarlo a la sección "📚 DOCUMENTOS CANÓNICOS" y a "🏗️ INFRAESTRUCTURA
 (CONSULTAR PRIMERO)" para que el protocolo se cargue de forma consistente en cada sesión, no solo cuando
-se recuerda buscarlo. Pendiente de que el usuario lo confirme y aplique esa edición al archivo raíz.
+se recuerda buscarlo. ~~Pendiente de que el usuario lo confirme y aplique esa edición al archivo raíz.~~
+
+**✅ RESUELTO — 1 Sep 2026.** El usuario lo confirmó. `DEVSYNC_SYSTEM_PROMPT.md` ahora lista
+`DEVSYNC_UPDATES.md` como punto 2 de «INFRAESTRUCTURA (CONSULTAR PRIMERO)» y le quitó el marcador
+*(pendiente)* en «DOCUMENTOS CANÓNICOS». El protocolo de arranque se carga en cada sesión.
