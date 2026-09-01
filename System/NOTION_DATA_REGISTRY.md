@@ -61,12 +61,12 @@ Las 4 nuevas las creó el usuario a mano (obligado por `G-05`) y el agente les p
 
 ```
 Project name   (title)
-Status         (status: Not started · Stop · In progress · Done)
-               grupos: To-do [Stop, Not started] · In progress · Complete [Done]
+Status         (status: Not started · Blocked · In progress · Done)
+               grupos: To-do [Blocked, Not started] · In progress · Complete [Done]
 Priority       (select: High · Medium · Low)
 Sprints        (relation → Sprints, dual ↔ "Projects")   ← ver §3.1
 Engagement     (select: Corporate · Freelance · Internal)
-Client         (select — 14 opciones, ver §3.2)
+Client         (select — 15 opciones, ver §3.2)
 Repos          (relation → Repos, dual ↔ "Projects")
 Dev Log        (relation → Dev Log, dual ↔ "Project")
 Documents      (relation → Document Hub, dual ↔ "Projects")
@@ -101,7 +101,8 @@ Convención de nombre — ver §3.6. `Sprints` es **exclusivamente temporal**; l
 ```
 Personas:    Isai Carrasco · Ing. Guillermo Sandoval · Ing. Sofía Cruz ·
              Lic. Blanca Chicas · Lic. Teresa Rocha · Karen Rodriguez ·
-             Wiliam Maldonado · Lic. Karen Hernández · Carlos Amaya
+             Wiliam Maldonado · Lic. Karen Hernández · Carlos Amaya ·
+             Yarissa Tabora
 Entidades:   Grupo Dimanza · Nasas y Suministros del Caribe ·
              Avicola Cañaveral
 Mixtos:      Feria Ing. Civil - UNITEC / Miguel y Juan ·
@@ -435,7 +436,7 @@ Este es el mecanismo central: el sistema no solo lee Notion, aprende su propio p
 | H-07 | `Status` conserva la opción `Stop` en vez de `Blocked` | 🟢 BAJO | ✅ **CERRADO** 8 Ago 2026 — corregido manualmente por el usuario |
 | H-08 | Schemas de `Toolkit`, `Technologies` y `Resources` sin leer en vivo | 🟡 MEDIO | ✅ **CERRADO** 8 Ago 2026 — leídos y normalizados |
 | H-09 | `Scrum` / `API` / `IA` clasificados como `Type = Tool` (herencia de `Herramienta`) | 🟢 BAJO | Abierto — reclasificación semántica, decisión del usuario |
-| H-10 | Faltan las bases `Dev Log`, `Sprints` y `Repos` | 🟡 MEDIO | Abierto — bloqueado por G-05, requiere creación manual |
+| H-10 | Faltan las bases `Dev Log`, `Sprints` y `Repos` | 🟡 MEDIO | ✅ **CERRADO** 10 Ago 2026 — las tres fueron creadas a mano por el usuario (G-05) y el agente les pobló el schema. Verificado en vivo el 1 Sep 2026: las tres responden con datos. El hallazgo quedó abierto por olvido, contradiciendo §2 y §3 de este mismo archivo. |
 
 **Regla #6 desbloqueada:** con H-01 cerrado, los agentes de DevSync ya pueden recibir acceso de lectura amplio a DevCodex.
 
@@ -484,3 +485,33 @@ Cambios detectados y propagados por el agente (Regla #3 — gana Notion):
 | Iconos cambiados (`Projects` 🏗️ · `Dev Log` ✏️ · `Training` 🎒 · `Document Hub` 📄) | Cosméticos |
 
 ⚠️ **Distinción importante:** el encabezado visual de la sección sigue diciendo `📚 Learning`, pero la base se llama `Training`. Los agentes usan **siempre el nombre de la base**, nunca el del encabezado.
+
+**1 Sep 2026 — Auditoría de drift archivo ↔ Notion (Regla #3)**
+
+Barrido de verificación en vivo contra DevCodex. El archivo se había desincronizado de la realidad
+en cuatro puntos, todos corregidos arriba:
+
+| Qué decía el archivo | Qué dice Notion hoy |
+| --- | --- |
+| `Status`: `Not started · Stop · In progress · Done` | `Blocked`, no `Stop`. H-07 se cerró el 8 Ago pero §3 nunca se actualizó |
+| `Client`: 14 opciones | 15 — faltaba `Yarissa Tabora`, en uso por el proyecto activo |
+| H-10 abierto: "faltan `Dev Log`, `Sprints`, `Repos`" | Las tres existen y están pobladas desde el 10 Ago. El hallazgo contradecía §2 y §3 de este mismo archivo |
+| — | `Sprints.Dev Log` estaba vacío en los 4 ciclos: 35 entradas del Dev Log quedaron enlazadas a `2026.08` |
+
+**La lección de método:** un hallazgo cerrado en la tabla §7 no se propaga solo a los schemas de §3.
+Cerrar un hallazgo exige tocar los dos lugares, o el archivo se contradice a sí mismo — que es
+exactamente lo que pasó con H-07 y con H-10.
+
+⚠️ **Regla #9 — corroborada el 1 Sep 2026, y el resultado invierte el supuesto.** La Regla #9 dice
+que "el sistema vive en dos lados: los `.md` locales y DevCodex". Para **este** archivo es **falso**:
+se buscó `NOTION_DATA_REGISTRY` por título en todo el workspace y se listó `Document Hub` filtrando
+`Category = Reference`. **No existe ninguna copia en DevCodex** — el único documento de referencia
+publicado es "Modelo de Ramas Git — EcommerceServiciosGenerales".
+
+O sea que no hay nada que replicar, pero sí hay un riesgo que la regla no cubre: **el archivo
+canónico del sistema existe en un solo lugar**, la carpeta `Downloads/DevSync/System/`, sin
+versionar. La Regla #9 protege contra *drift* entre copias; acá el problema es el opuesto —
+**cero redundancia**. Si esa carpeta se pierde, se pierde la definición del sistema.
+
+Decisión pendiente del usuario: publicar el registro en `Document Hub` (`Category = Reference`,
+`Source Path` apuntando al archivo real) o poner la carpeta bajo git.
