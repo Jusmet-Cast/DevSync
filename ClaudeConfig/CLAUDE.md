@@ -145,3 +145,7 @@ Restricciones de plataforma, no de estilo. Aplican a todo lo que corra vía el t
 ---
 
 @./memory/ENGRAM-PROTOCOL.md
+<!-- Capa 1 (gobernanza). `__DEVSYNC_REPO__` lo reemplaza el Paso 1 de INSTALL.md
+     por la ruta donde clonaste DevSync. No hardcodear la ruta de una maquina:
+     un @import que no resuelve no da error, simplemente no carga. -->
+@__DEVSYNC_REPO__/System/DEVSYNC_SYSTEM_PROMPT.md
