@@ -28,13 +28,20 @@ mismo principio que el protocolo de Engram para MCPs no disponibles).
 
 Antes de cerrar una sesión de DevSync, CORE ejecuta en orden:
 
-1. Documentar en DevCodex (Dev Log + Notas Finales/Quick Notes del proyecto activo) el trabajo de la
-   sesión — spikes, hallazgos, decisiones — siguiendo el Protocolo de Espejo (Regla #2).
-2. Preparar una proyección para el próximo daily (qué se hizo, qué sigue, impedimentos) y dejarla
-   registrada en el mismo lugar.
-3. Bajar cualquier proceso en background que la sesión haya iniciado (servidores de desarrollo,
+1. Documentar en **`Dev Log`** el trabajo de la sesión — spikes, hallazgos, decisiones — siguiendo el
+   Protocolo de Espejo (Regla #2).
+   *(Antes decía: ~~"Documentar en DevCodex (Dev Log + Notas Finales/Quick Notes del proyecto activo)"~~
+   — ver Corrección del 5 Sep 2026 más abajo.)*
+2. Preparar una proyección para el próximo daily (qué se hizo, qué sigue, impedimentos) y registrarla
+   **también en `Dev Log`**, NO en la página del proyecto.
+   *(Antes decía: ~~"y dejarla registrada en el mismo lugar"~~, donde "el mismo lugar" incluía las
+   Notas Finales del proyecto.)*
+3. **Actualizar la página del proyecto solo si cambió su estado**: avance por punto del alcance,
+   decisiones vigentes, pendientes. Es una **actualización en su lugar**, nunca una sección nueva
+   anexada por sesión. Si la sesión no movió el estado del proyecto, la página no se toca.
+4. Bajar cualquier proceso en background que la sesión haya iniciado (servidores de desarrollo,
    watchers, builds) — verificar explícitamente que el puerto/proceso quedó liberado, no asumirlo.
-4. Despedirse con **"Bye world! ;)"** como confirmación de que los pasos 1-3 se completaron.
+5. Despedirse con **"Bye world! ;)"** como confirmación de que los pasos 1-4 se completaron.
 
 **Por qué:** el usuario pidió explícitamente estos dos protocolos de sign-off/arranque el 25 Ago 2026,
 como parte de cerrar una sesión de trabajo sobre el proyecto "Administración de Impulsadoras y Meta".
@@ -51,6 +58,41 @@ se recuerda buscarlo. ~~Pendiente de que el usuario lo confirme y aplique esa ed
 **✅ RESUELTO — 1 Sep 2026.** El usuario lo confirmó. `DEVSYNC_SYSTEM_PROMPT.md` ahora lista
 `DEVSYNC_UPDATES.md` como punto 2 de «INFRAESTRUCTURA (CONSULTAR PRIMERO)» y le quitó el marcador
 *(pendiente)* en «DOCUMENTOS CANÓNICOS». El protocolo de arranque se carga en cada sesión.
+
+### 🔧 Corrección — 5 Sep 2026: el cierre ya no escribe en la página del proyecto
+
+**Qué estaba mal.** Los pasos 1 y 2 mandaban documentar la sesión y la proyección del daily en las
+«Notas Finales / Quick Notes del proyecto activo». Eso convertía a la página del proyecto en una
+bitácora por acumulación: cada cierre anexaba una sección nueva, y ninguna se retiraba jamás.
+
+**El daño es medible, no teórico.** La página de «Administración de Impulsadoras y Meta» llegó a
+**95.914 caracteres, 756 líneas y 45 secciones** siguiendo este protocolo al pie de la letra, y encima
+quedó desactualizada: terminaba el 29 de Agosto con una «proyección para el 2 Sep» mientras el trabajo
+real del 1 al 5 de Septiembre vivía solo en `Dev Log`. Una página que nadie puede leer de un vistazo no
+cumple la única función que tiene.
+
+**La regla que la reemplaza**, establecida por el usuario el 5 Sep 2026:
+
+> La página del proyecto se lee para saber **dónde está** el proyecto hoy, no **cómo llegó** hasta acá.
+
+| Va en la **página del proyecto** | Va en **`Dev Log`** |
+| --- | --- |
+| El requerimiento original (es el contrato con el cliente) | Dailies y proyecciones de daily |
+| Avance general por punto del alcance | Cierres de sesión |
+| Decisiones vigentes que todavía gobiernan el diseño | Spikes y su desarrollo cronológico |
+| Pendientes para cerrar el alcance | Mapas de commits |
+| Preguntas abiertas a negocio o al cliente | Corridas de verificación puntuales |
+
+**Por qué es coherente con el resto del sistema.** Es la Regla #1 aplicada un nivel más abajo: la
+página guarda **estado**, el `Dev Log` guarda **historia**. Mismo principio por el que los `.md`
+canónicos no se transcriben a DevCodex.
+
+**Consecuencia operativa al aplicar esto sobre una página ya inflada:** antes de borrar una sección hay
+que **verificar entrada por entrada** que tenga contraparte en `Dev Log`, y crear la entrada faltante
+—fechada en su fecha original y rotulada como recuperación— cuando no la tenga. Asumir la cobertura es
+como se pierde información para siempre. En la limpieza del 5 Sep, de 45 secciones contra 49 entradas
+de `Dev Log`, hubo **dos huecos reales** (la división en dos fases del 18 Ago, y el spike DEV-002 con su
+evidencia numérica): los dos se migraron antes de tocar la página.
 
 ---
 
