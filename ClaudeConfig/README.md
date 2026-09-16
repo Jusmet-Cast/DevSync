@@ -47,6 +47,14 @@ si no la moviste, cae al default de siempre. No hay ninguna ruta que actualizar 
 | **`engram` v1.12.0+ en el `PATH`** | Memoria persistente vía MCP. [Gentleman-Programming/engram](https://github.com/Gentleman-Programming/engram) — verificar con `engram --version`. Sin él, el protocolo de `CLAUDE.md` no se puede cumplir; el hook `SessionStart` avisa fuerte. |
 | **.NET SDK / Angular CLI** | Opcionales: los usa el hook `auto-format` si están. Si no están, no formatea y sigue. |
 
+> ⚠️ **Git Bash instalado no es lo mismo que Git Bash detectado.** Si está instalado sin
+> privilegios de administrador (típico en `%LOCALAPPDATA%\Programs\Git`), no queda en el `PATH` y
+> Claude Code cae a PowerShell **sin ningún error visible** — statusLine en blanco, hooks rotos en
+> silencio. `where bash` puede resolver al launcher de WSL en `System32` y hacerte creer que está
+> todo bien cuando no lo está. Si `where bash` / `where git` no apuntan a la instalación real de
+> Git for Windows, setear `CLAUDE_CODE_GIT_BASH_PATH` en el `env` del `settings.json` **local**
+> (por máquina, nunca hardcodeado en este repo) con la ruta real del `bash.exe`.
+
 ## Bootstrap en una máquina nueva
 
 ```bash

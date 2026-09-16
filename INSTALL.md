@@ -50,6 +50,16 @@ DevSync no es una herramienta — son **tres capas que se necesitan entre sí**.
 | **Engram ≥ v1.12.0** | Memoria persistente cross-sesión y cross-herramienta | `engram --version` |
 | **Cuenta de Notion** con acceso a DevCodex | Capa 3 | — |
 
+> ⚠️ **`bash --version` no alcanza para verificar.** Si Git Bash está instalado sin privilegios
+> de administrador (típico en `%LOCALAPPDATA%\Programs\Git`), no queda en el `PATH` y Claude Code
+> no lo autodetecta — cae a PowerShell **sin ningún error visible**: la statusLine queda en
+> blanco y los hooks corren rotos en silencio. `bash --version` puede seguir "funcionando" porque
+> resuelve al launcher de WSL en `System32`, que no es Git Bash.
+>
+> Verificar con `where bash` y `where git`: si no apuntan a la carpeta de instalación de Git for
+> Windows, setear `CLAUDE_CODE_GIT_BASH_PATH` en el bloque `env` del `settings.json` **local** de
+> esa máquina, con la ruta real de ese `bash.exe`. No se hardcodea en el repo — es por máquina.
+
 ---
 
 ## 3. Instalación paso a paso
