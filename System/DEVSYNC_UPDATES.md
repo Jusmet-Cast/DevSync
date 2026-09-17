@@ -147,6 +147,51 @@ crecimiento del propio DevSync", no el lugar donde el documento "viva precisamen
       **Hasta que existan, la v2 describe un mecanismo que todavía no está montado** — el mismo
       pecado de la v1, y por eso queda anotado acá en vez de darse por hecho.
 - [ ] `Sprint` de la entrada de `Dev Log` del 10 Ago sigue vacío.
-- [ ] Engram archiva bajo `claude-config-madian` todo lo guardado desde `C:\Users\jacastro`, porque
-      resuelve el proyecto por `cwd` y auto-promueve el repo hijo. Se corrige arrancando la sesión
-      con `cd ~/Downloads/DevSync && claude`. No existe proyecto `DevSync` en Engram todavía.
+- [x] Engram archiva bajo `claude-config-madian` todo lo guardado desde `C:\Users\jacastro`, porque
+      resuelve el proyecto por `cwd` y auto-promueve el repo hijo. **Corregido en Amendment 003** —
+      la mitigación ya no depende de una ruta hardcodeada de esta máquina. No existe proyecto
+      `DevSync` propio en Engram todavía; arrancar desde la raíz del repo es la mitigación mientras
+      tanto.
+
+---
+
+## Amendment 003 — Arranque de sesión agnóstico de ruta de instalación (16 Sep 2026)
+
+**Agente responsable:** CORE (`DEVSYNC_SYSTEM_PROMPT.md`) — orquestación transversal sobre cómo se
+arranca cualquier sesión de mantenimiento del propio sistema, no dominio de un agente de línea.
+
+### Qué se corrige
+
+El pendiente anotado en el Amendment 002 (arriba) daba como fix una ruta hardcodeada de esta
+máquina: `cd ~/Downloads/DevSync && claude`. Eso viola el mismo criterio de portabilidad que ya
+rige el resto del repo (Regla #9, ver `devsync-es-el-repo-de-registro` en la memoria persistente):
+DevSync es agnóstico a dónde se instala, así que la instrucción de arranque no puede depender de
+una ruta fija de una sola máquina.
+
+### La regla correcta
+
+Engram (memoria persistente vía MCP) resuelve el proyecto activo por el `cwd` desde el que arranca
+`claude`, no por dónde vive `.claude` ni por qué archivos se tocan durante la sesión. Cualquier
+sesión que vaya a mantener este repo debe arrancar parada en **su propia raíz**, sea cual sea la
+carpeta donde esté clonado:
+
+```
+cd <ruta-donde-esté-clonado-DevSync> && claude
+```
+
+Si se arranca desde otro directorio (p. ej. el home del usuario), Engram puede auto-promover la
+sesión a otro repo git que encuentre cerca, y todo lo que se guarde durante esa sesión queda
+atribuido al proyecto equivocado.
+
+### Convención sugerida (no obligatoria)
+
+Instalar este repo en la raíz del usuario, al lado de la carpeta `.claude` — ej. `~/DevSync` — en
+vez de en `Downloads` u otra carpeta transitoria. No es un requisito técnico (el arranque de arriba
+funciona desde cualquier ubicación); es una convención para que la ruta sea fácil de recordar y no
+quede en una carpeta pensada para archivos temporales. Documentado también en `INSTALL.md`.
+
+### Aplicado en esta máquina
+
+El 16 Sep 2026 el repo vivía en `~/Downloads/DevSync`. Se movió a `~/DevSync` (raíz del usuario, al
+lado de `.claude`) siguiendo esta misma convención, y se actualizó la única referencia hardcodeada
+que dependía de la ruta vieja: el `@import` en `~/.claude/CLAUDE.md`.

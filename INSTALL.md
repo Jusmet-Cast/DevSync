@@ -60,6 +60,20 @@ DevSync no es una herramienta — son **tres capas que se necesitan entre sí**.
 > Windows, setear `CLAUDE_CODE_GIT_BASH_PATH` en el bloque `env` del `settings.json` **local** de
 > esa máquina, con la ruta real de ese `bash.exe`. No se hardcodea en el repo — es por máquina.
 
+> ⚠️ **Para mantener este repo, arrancá la sesión parado en su propia raíz — no en el home del
+> usuario.** Engram (memoria persistente vía MCP) resuelve el proyecto activo por el `cwd` desde
+> el que arranca `claude`, no por dónde vive `.claude`. Si arrancás la sesión desde otro directorio,
+> Engram puede auto-promover a otro repo git que encuentre cerca y todo lo que guardes durante esa
+> sesión queda atribuido al proyecto equivocado.
+>
+> ```
+> cd <ruta-donde-clonaste-este-repo> && claude
+> ```
+>
+> Esto funciona igual sea cual sea la carpeta de instalación — no depende de una ruta fija.
+> **Convención sugerida (no obligatoria):** instalar este repo en la raíz del usuario, al lado de
+> la carpeta `.claude` (ej. `~/DevSync`), en vez de en `Downloads` u otra carpeta transitoria.
+
 ---
 
 ## 3. Instalación paso a paso

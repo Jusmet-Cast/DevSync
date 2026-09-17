@@ -529,9 +529,12 @@ se buscó `NOTION_DATA_REGISTRY` por título en todo el workspace y se listó `D
 publicado es "Modelo de Ramas Git — EcommerceServiciosGenerales".
 
 O sea que no hay nada que replicar, pero sí hay un riesgo que la regla no cubre: **el archivo
-canónico del sistema existe en un solo lugar**, la carpeta `Downloads/DevSync/System/`, sin
-versionar. La Regla #9 protege contra *drift* entre copias; acá el problema es el opuesto —
-**cero redundancia**. Si esa carpeta se pierde, se pierde la definición del sistema.
+canónico del sistema existe en un solo lugar**, la carpeta `System/` de este repo. La Regla #9
+protege contra *drift* entre copias; acá el problema es el opuesto — **cero redundancia**. Si esa
+carpeta se pierde, se pierde la definición del sistema.
+
+> Nota de portabilidad: la ruta absoluta a esa carpeta depende de dónde esté clonado el repo en
+> cada máquina — nunca se hardcodea acá (ver Amendment 003 de `DEVSYNC_UPDATES.md`).
 
 Decisión pendiente del usuario: publicar el registro en `Document Hub` (`Category = Reference`,
 `Source Path` apuntando al archivo real) o poner la carpeta bajo git.
