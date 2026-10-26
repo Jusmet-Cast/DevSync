@@ -191,6 +191,24 @@ Requisito del usuario: **máximo una nota de KPI activa por mes**, dentro de `No
 | K-04 | Julio repite el mismo PR (`16230`) en los 5 compromisos | ✅ **RESUELTO** 10 Ago 2026 — confirmado por el usuario: a veces todo un mes o sprint va en **un solo PR separado por commits**. No siempre, pero pasa. Modelado como 1:N (`Dev Log.Pull Request` es url por entrada, no relación). |
 | K-08 | Solo el formato de **julio 2026** es vigente. Los 12 reportes anteriores son **formatos deprecados** | ✅ Registrado 10 Ago 2026 — sirven como referencia histórica de tono y granularidad, **nunca como plantilla**. Si se suben al Document Hub van con `Status = Deprecated`. |
 | K-07 | Las secciones 3 y 4 son **solo capturas de imagen** — cero texto extraíble. ECHO nunca podrá generarlas; siempre serán input manual del usuario. Documentado, no es un defecto. | 🟢 BAJO |
+| K-09 | `Tasa de Cambios Fallidos` y `Tiempo de Entrega de Cambios (Lead Time)` vivían como PDFs sueltos en la carpeta, nunca como secciones del `FORMATO` agregado. Decisión del usuario (Sep 2026): se agregan como secciones `6` y `7` del documento aglomerado, cada una con tabla. | ✅ Resuelto Sep 2026 — ver §2.1 y §2.2 abajo |
+
+### 2.1 Sección 6 — Tasa de Cambios Fallidos (tabla)
+
+Columnas: `#` · `Cambio publicado` · `Fecha` · `¿Causó falla propia en producción?`.
+
+**Criterio fijado por el usuario: "tasa de despliegues propios".** Cuenta como falla SOLO el cambio
+cuyo **propio despliegue de este mes** causó el incidente (CFR real, DORA). Un caso que repara un
+bug preexistente de OTRO cambio/autor/mes es un incidente **atendido**, no una falla de los
+cambios publicados este mes — se marca "No" en la tabla aunque haya requerido hotfix.
+
+`Total publicados` y `Total con falla propia` van al pie, con el % resultante contra la meta (≤30%).
+
+### 2.2 Sección 7 — Tiempo de Entrega de Cambios (Lead Time, tabla)
+
+Columnas: `Cambio` · `Integración a Develop/main` · `Publicación a producción` · `Lead time`.
+Un cambio sin desplegar todavía se incluye con lead time "Abierto, no cerrado" — nunca se excluye
+en silencio ni se fuerza una fecha. El promedio del pie solo cuenta los casos cerrados.
 
 ---
 
