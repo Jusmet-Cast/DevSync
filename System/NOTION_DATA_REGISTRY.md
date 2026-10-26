@@ -300,10 +300,12 @@ Technologies       (relation → Technologies, dual ↔ "Documents")
 ```
 Validation · Test Plan · KPI Report · Architecture · Spec ·
 Migration Status · Runbook · Postmortem · Meeting Notes · Reference ·
-Proposal · Planning · Strategy doc · Customer research
+Proposal · Planning · Strategy doc · Customer research · Template
 ```
 
-Las últimas cuatro venían de la plantilla original de Notion y se conservaron: sirven para el trabajo de producto y preventa, no solo de código.
+Las cuatro previas a `Template` venían de la plantilla original de Notion y se conservaron: sirven para el trabajo de producto y preventa, no solo de código.
+
+`Template` se agregó el 17 Sep 2026 para alojar formatos reutilizables (ej. "Plantilla — Ticket DBA", "Plantilla — Requerimiento") — antes no tenían categoría propia y quedaban sueltos bajo `Reference`.
 
 ---
 
