@@ -142,10 +142,32 @@ crecimiento del propio DevSync", no el lugar donde el documento "viva precisamen
 
 ### Pendiente (Regla #9 · esta enmienda se audita a sí misma)
 
-- [ ] Crear los punteros en `Document Hub` para `DEVSYNC_SYSTEM_PROMPT.md`,
+- [x] Crear los punteros en `Document Hub` para `DEVSYNC_SYSTEM_PROMPT.md`,
       `NOTION_DATA_REGISTRY.md`, `DEVSYNC_UPDATES.md` y `INSTALL.md`.
-      **Hasta que existan, la v2 describe un mecanismo que todavía no está montado** — el mismo
-      pecado de la v1, y por eso queda anotado acá en vez de darse por hecho.
+      ~~**Hasta que existan, la v2 describe un mecanismo que todavía no está montado** — el mismo
+      pecado de la v1, y por eso queda anotado acá en vez de darse por hecho.~~
+      **✅ RESUELTO — 26 Oct 2026.** Los cuatro existen y fueron verificados en vivo con una query
+      independiente al `Document Hub`. **La v2 ya no describe un mecanismo que no está montado.**
+
+      | Documento | Page ID | `Status` / `Confidence` | SHA |
+      | --- | --- | --- | --- |
+      | `DEVSYNC_SYSTEM_PROMPT.md` | `405ef7d9-a13c-817c-88c7-dfd55453d852` | `Approved` / `Verified` | `b6c17f0` |
+      | `DEVSYNC_UPDATES.md` | `405ef7d9-a13c-81a2-b4c1-fceb3d481ea0` | `Approved` / `Verified` | `88e8994` |
+      | `INSTALL.md` | `405ef7d9-a13c-817d-80f6-de1ecd66eea4` | `Approved` / `Verified` | `88e8994` |
+      | `NOTION_DATA_REGISTRY.md` | `405ef7d9-a13c-810a-be32-d9c4e2ec21ca` | **`Draft` / `Estimated`** | `3d5356f` ⛔ |
+
+      **Por qué uno quedó en `Draft`** — y por qué eso NO es un puntero a medio hacer: su SHA
+      `3d5356f` todavía no está pusheado, y la Regla #9 v2 dice que un archivo canónico sin
+      pushear **no está respaldado**. No había tercera opción honesta: apuntar al SHA local da
+      404 en GitHub, y apuntar al último pusheado (`50f3434`) describe un contenido que ya no es
+      el del disco. Se eligió **declarar la incerteza** (Regla #8, la confianza es campo de
+      primera clase) en vez de elegir un SHA cómodo. Se promueve a `Approved` / `Verified`
+      cuando se pushee.
+
+      **Hallazgo de schema:** `Document Hub` **no tiene propiedades** para URL de GitHub ni para
+      SHA, aunque esta enmienda las exige. Hoy viven dentro de `Notes` (texto libre), así que no
+      se puede filtrar ni ordenar por SHA. Si los punteros se empiezan a consultar seguido,
+      `Commit SHA` merece ser propiedad propia — queda como decisión abierta del usuario.
 - [ ] `Sprint` de la entrada de `Dev Log` del 10 Ago sigue vacío.
 - [x] Engram archiva bajo `claude-config-madian` todo lo guardado desde `C:\Users\jacastro`, porque
       resuelve el proyecto por `cwd` y auto-promueve el repo hijo. **Corregido en Amendment 003** —
