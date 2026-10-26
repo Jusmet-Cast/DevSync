@@ -1,0 +1,60 @@
+{
+  "$comment": [
+    "Definicion reproducible del MCP server de Azure DevOps Server on-prem (TFS).",
+    "",
+    "PROBLEMA QUE RESUELVE: el registro real vive en .claude.json, dentro de esta misma carpeta",
+    "de configuracion, y ese archivo esta (correctamente) en .gitignore porque contiene el PAT.",
+    "Sin este archivo, maquina nueva = server inexistente y RELAY no tiene forma de leer PRs/repos",
+    "de sertfs.grupofarsiman.com, sin error visible hasta que un agente intenta usarlo.",
+    "",
+    "EL PAT NO VA ACA. Nunca. Se pasa por -e al registrar el server (ver abajo).",
+    "",
+    "PAQUETE: @tiberriver256/mcp-server-azure-devops",
+    "  https://github.com/Tiberriver256/mcp-server-azure-devops",
+    "  Soporta Azure DevOps Server (on-prem/TFS) ademas de Azure DevOps Services (nube).",
+    "  On-prem solo soporta autenticacion PAT (Azure Identity / Azure CLI son solo para la nube).",
+    "",
+    "COMO OBTENER EL PAT (en la instancia on-prem):",
+    "  1) https://sertfs.grupofarsiman.com/tfs/GrupoFarsimanCollection/_usersSettings/tokens",
+    "     (o el menu de usuario -> Security -> Personal Access Tokens)",
+    "  2) Alcance minimo recomendado: 'Code (Read)' -- alcanza para ver PRs, diffs y repos.",
+    "     Sumar 'Code (Read & Write)' solo si ademas se necesita comentar o crear PRs.",
+    "  3) Copiar el token generado -- se muestra una sola vez.",
+    "",
+    "COMO REGISTRARLO (una vez por maquina):",
+    "  claude mcp add --scope user azure-devops \\",
+    "    -e AZURE_DEVOPS_ORG_URL=https://sertfs.grupofarsiman.com/tfs/GrupoFarsimanCollection \\",
+    "    -e AZURE_DEVOPS_AUTH_METHOD=pat \\",
+    "    -e AZURE_DEVOPS_PAT=TU_TOKEN \\",
+    "    -e AZURE_DEVOPS_DEFAULT_PROJECT=Farmacia \\",
+    "    -- npx -y @tiberriver256/mcp-server-azure-devops",
+    "",
+    "VERIFICACION:",
+    "  /mcp                     dentro de Claude Code -> 'azure-devops' debe figurar conectado",
+    "  claude mcp list          desde terminal",
+    "  Prueba real: pedirle que liste PRs activos del repo ERPLegacyGit.",
+    "",
+    "SEGURIDAD (Regla #6 — dominio de CIPHER):",
+    "  - El PAT da acceso segun el alcance elegido a TODA la collection GrupoFarsimanCollection,",
+    "    no solo al proyecto Farmacia -- Azure DevOps/TFS no permite acotar un PAT a un repo solo.",
+    "  - Vive solo en .claude.json, que esta en .gitignore. NUNCA se commitea ni se copia",
+    "    al espejo de DevSync/ClaudeConfig.",
+    "  - Si se expone: se ROTA (revocar y regenerar en la pagina de tokens). Borrarlo del lugar",
+    "    donde se filtro no lo desexpone.",
+    "  - Los PAT de Azure DevOps expiran (max 1 año on-prem, configurable) -- registrar el",
+    "    vencimiento elegido para no perder el acceso silenciosamente."
+  ],
+  "mcpServers": {
+    "azure-devops": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@tiberriver256/mcp-server-azure-devops"],
+      "env": {
+        "AZURE_DEVOPS_ORG_URL": "https://sertfs.grupofarsiman.com/tfs/GrupoFarsimanCollection",
+        "AZURE_DEVOPS_AUTH_METHOD": "pat",
+        "AZURE_DEVOPS_DEFAULT_PROJECT": "Farmacia",
+        "AZURE_DEVOPS_PAT": "<PAT — NO versionar. Pasar por -e al registrar>"
+      }
+    }
+  }
+}
