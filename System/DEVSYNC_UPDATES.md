@@ -217,3 +217,47 @@ quede en una carpeta pensada para archivos temporales. Documentado también en `
 El 16 Sep 2026 el repo vivía en `~/Downloads/DevSync`. Se movió a `~/DevSync` (raíz del usuario, al
 lado de `.claude`) siguiendo esta misma convención, y se actualizó la única referencia hardcodeada
 que dependía de la ruta vieja: el `@import` en `~/.claude/CLAUDE.md`.
+
+---
+
+## Amendment 004 — Plugin Caveman instalado (10 Nov 2026)
+
+**Agente responsable:** CORE — herramienta de plataforma, no dominio de un agente de línea.
+
+### Qué se instaló
+
+A pedido explícito del usuario, se instaló **Caveman** (`github.com/JuliusBrussee/caveman`,
+Apache-2.0), un plugin de Claude Code que reduce tokens de input/output ("say less" + "read less").
+Verificado antes de instalar: repo real y activo (118k+ stars, citado por Adobe Research/JetBrains/
+Elastic, no es un paquete falso).
+
+```
+claude plugin marketplace add JuliusBrussee/caveman
+claude plugin install caveman@caveman        (scope: user)
+caveman telemetry off                        (persistido — DO_NOT_TRACK también seteado en el install)
+```
+
+### Alcance — **global, no específico de DevSync**
+
+Se instaló con `scope: user`, igual que Engram. Aplica a **todas** las sesiones de Claude Code en
+esta máquina, no solo a este repo. El usuario confirmó explícitamente ese alcance antes de instalar
+(no se asumió en silencio — Regla #12).
+
+### Qué quedó prendido y qué no
+
+| Componente | Estado |
+|---|---|
+| Plugin Claude Code (voz "say less", hooks SessionStart/SubagentStart/UserPromptSubmit/SessionEnd) | ✅ Activo |
+| Telemetría | ⛔ Apagada (`caveman telemetry off`) |
+| `caveman-proxy` (compresión/medición de tráfico del agente) | ⛔ NO instalado — requiere `caveman setup --install`, deliberadamente no ejecutado por ser más invasivo |
+| Routing "Auto" / `cavemem` (memoria) / Caveman Cloud | ⛔ NO configurado — requiere login a una cuenta externa |
+
+### Por qué importa para este sistema
+
+El plugin interactúa con el mismo espacio de hooks que ya usan `git-guard.js` y
+`clean-arch-guard.js` (ver sección «Sub-agentes: qué NO pueden hacer» del `CLAUDE.md` raíz). No se
+verificó en esta sesión que no haya conflicto de orden de ejecución entre hooks — queda como punto
+a observar si aparece un comportamiento raro de hooks después de esta instalación.
+
+**Para desinstalar:** `npx -y github:JuliusBrussee/caveman -- --uninstall` o `claude plugin uninstall
+caveman@caveman`.
